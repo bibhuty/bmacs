@@ -138,7 +138,6 @@
 (use-package ivy-rich
   :init
   (ivy-rich-mode 1)
-nil
 )
 
 (use-package counsel
