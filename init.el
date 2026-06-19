@@ -184,7 +184,11 @@
 (use-package org
   :hook (org-mode . my/org-mode-setup)
   :config
-  (setq org-ellipsis " ▾"))
+  (setq org-ellipsis " ▾")
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+  (setq org-agenda-files '("~/Documents/GitHub/bmacs/orgFiles/Task.org")))
 
 
 (use-package org-bullets
@@ -218,3 +222,21 @@
 
 (use-package visual-fill-column
   :hook (org-mode . my/org-visual-fill))
+
+
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python     . t)
+     (java       . t)
+     (js         . t)       ;; This handles JavaScript via Node.js
+     (shell      . t)))     ;; This handles Shell, Bash, and Sh
+
+  ;; Stop Emacs from asking "Are you sure?" every time you run code
+  (setq org-confirm-babel-evaluate nil)
+  (setq org-babel-python-command "python3")) ;; 
+
+(require 'org-tempo)
+
+
