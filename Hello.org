@@ -1,0 +1,32 @@
+* First Heading
+
+ Here is *some* content.
+
+** Sub-heading:
+
+- Here is some content
+
+* TODO Inserted Heading!
+
+#+begin_src python
+print("Hello World");
+#+end_src
+
+* DONE Second Heading:
+
+Here is [[https://google.com][google home page]]
+
+| Name    | Age | Uses Emacs |
+| David   |  37 | YES        |
+| Baby    |   2 | NO         |
+| Someone |   6 | YES        |
+
+- First Item
+- Second Item
+- Third Item
+
+- [ ] First Checkbox
+
+- [ ] Second Checkbox
+
+- [X] Third Checkbox
