@@ -168,7 +168,7 @@
   ;; Route visual programs to a real terminal automatically
   (with-eval-after-load 'esh-opt
     (setq eshell-destroy-buffer-when-process-dies t)
-    (setq eshell-visual-commands '("htop" "zsh" "vim"))))
+    (setq eshell-visual-commands '("htop" "zsh" "vim")))
 
 (defun my/org-mode-setup ()
   (org-indent-mode)
@@ -205,7 +205,7 @@
 
 (defun my/org-visual-fill ()
   (setq visual-fill-column-width 100
-        visual-fill-column-center-text nil)
+        visual-fill-column-center-text t)
   (visual-line-mode 1)
   (visual-fill-column-mode 1))
 
@@ -289,3 +289,26 @@
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
+
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom
+  (dired-listing-switches "-agho")
+  (dired-use-ls-dired nil)
+  (dired-kill-when-opening-new-dired-buffer t)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-up-directory
+    "l" 'dired-find-file))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+;; We removed the :hook from this package!
+;; It is now loaded, but it WON'T automatically hide files.
+(use-package dired-hide-dotfiles
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
