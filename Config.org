@@ -403,3 +403,18 @@ Automatically extract the code from this file into =config.el= every time we sav
     (evil-collection-define-key 'normal 'dired-mode-map
       "H" 'dired-hide-dotfiles-mode))
 #+end_src
+
+** Auto Package Update
+Automatically checks for package updates every 7 days, prompts you before downloading, and cleans up old versions so your Emacs directory doesn't bloat.
+
+#+begin_src emacs-lisp
+    (use-package auto-package-update
+      :custom
+      (auto-package-update-interval 7)
+      (auto-package-update-prompt-before-update t)
+      (auto-package-update-hide-results t)
+      (auto-package-update-delete-old-versions t)
+      :config
+      (auto-package-update-maybe)
+      (auto-package-update-at-time "09:00"))
+#+end_src
