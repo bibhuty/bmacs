@@ -21,9 +21,9 @@
 (setq display-line-numbers-type 'relative)
 
 (use-package doom-themes)
-(load-theme 'doom-solarized-light t) 
+(load-theme 'doom-solarized-light t)
 
-(use-package all-the-icons) 
+(use-package all-the-icons)
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
@@ -34,7 +34,7 @@
                 term-mode-hook
                 eshell-mode-hook
                 vterm-mode-hook
-		  treemacs-mode-hook))
+                treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode -1))))
 
 (use-package evil
@@ -62,7 +62,7 @@
   :config
   (evil-collection-init))
 
-(use-package diminish) 
+(use-package diminish)
 
 (use-package which-key
   :init (which-key-mode)
@@ -142,6 +142,34 @@
   :after projectile
   :config (counsel-projectile-mode))
 
+(defun efs/configure-eshell ()
+  ;; Save command history when commands are entered
+  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+  ;; Truncate buffer for performance
+  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+  ;; Bind some useful keys for evil-mode
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+  (evil-normalize-keymaps)
+
+  (setq eshell-history-size         10000
+        eshell-buffer-maximum-lines 10000
+        eshell-hist-ignoredups t
+        eshell-scroll-to-bottom-on-input t))
+
+(use-package eshell-git-prompt)
+
+(use-package eshell
+  :hook (eshell-first-time-mode . efs/configure-eshell)
+  :config
+  (eshell-git-prompt-use-theme 'robbyrussell))
+  ;; Route visual programs to a real terminal automatically
+  (with-eval-after-load 'esh-opt
+    (setq eshell-destroy-buffer-when-process-dies t)
+    (setq eshell-visual-commands '("htop" "zsh" "vim"))))
+
 (defun my/org-mode-setup ()
   (org-indent-mode)
   (visual-line-mode 1))
@@ -173,11 +201,11 @@
                 (org-level-6 . 1.1)
                 (org-level-7 . 1.1)
                 (org-level-8 . 1.1)))
-  (set-face-attribute (car face) nil :font "Arial" :weight 'regular :height (cdr face)))
+  (set-face-attribute (car face) nil :weight 'regular :height (cdr face)))
 
 (defun my/org-visual-fill ()
   (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
+        visual-fill-column-center-text nil)
   (visual-line-mode 1)
   (visual-fill-column-mode 1))
 
@@ -194,7 +222,7 @@
      (shell      . t)))
 
   (setq org-confirm-babel-evaluate nil)
-  (setq org-babel-python-command "python3")) 
+  (setq org-babel-python-command "python3"))
 
 (require 'org-tempo)
 
@@ -220,10 +248,12 @@
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
   :config
   (lsp-enable-which-key-integration t))
+
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom
   (lsp-ui-doc-position 'bottom))
+
 ;; 1. Load the core file explorer first
 (use-package treemacs
   :ensure t
@@ -256,5 +286,6 @@
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
+
 (use-package company-box
   :hook (company-mode . company-box-mode))

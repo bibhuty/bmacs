@@ -10,6 +10,7 @@
 - [[#workspace--navigation][Workspace & Navigation]]
 - [[#developer-tools][Developer Tools]]
 - [[#the-org-universe][The Org Universe]]
+- [[#development][Development]]
 
 * System Initialization
 Before we can build the editor, we need to bootstrap the package management system. This ensures that whenever this configuration is loaded on a new machine, Emacs knows exactly where to download our tools.
@@ -53,22 +54,22 @@ Disable the visual noise to maximize screen real estate for actual code and text
 We are currently using the Solarized Light theme, paired with the Doom Modeline for a beautiful, informative status bar at the bottom of the screen.
 
 #+begin_src emacs-lisp
-    (use-package doom-themes)
-    (load-theme 'doom-solarized-light t) 
+  (use-package doom-themes)
+  (load-theme 'doom-solarized-light t)
 
-    (use-package all-the-icons) 
+  (use-package all-the-icons)
 
-    (use-package doom-modeline
-      :init (doom-modeline-mode 1)
-      :custom ((doom-modeline-height 15)))
+  (use-package doom-modeline
+    :init (doom-modeline-mode 1)
+    :custom ((doom-modeline-height 15)))
 
-    ;; Disable line numbers for specific non-coding buffers
-    (dolist (mode '(org-mode-hook
-                    term-mode-hook
-                    eshell-mode-hook
-                    vterm-mode-hook
-  		  treemacs-mode-hook))
-      (add-hook mode (lambda () (display-line-numbers-mode -1))))
+  ;; Disable line numbers for specific non-coding buffers
+  (dolist (mode '(org-mode-hook
+                  term-mode-hook
+                  eshell-mode-hook
+                  vterm-mode-hook
+                  treemacs-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode -1))))
 #+end_src
 
 * The Vim Engine (Evil Mode)
@@ -106,7 +107,7 @@ Finding files and executing commands should be instantaneous. We use the Ivy/Cou
 
 ** Minibuffer Superpowers
 #+begin_src emacs-lisp
-  (use-package diminish) 
+  (use-package diminish)
 
   (use-package which-key
     :init (which-key-mode)
@@ -162,13 +163,16 @@ Finding files and executing commands should be instantaneous. We use the Ivy/Cou
 * Developer Tools
 These packages transform Emacs from a text editor into a full-fledged Integrated Development Environment (IDE).
 
-** Magit & Projectile
+** Vterm
 #+begin_src emacs-lisp
   (use-package vterm
     :commands vterm
     :config
     (setq vterm-max-scrollback 10000))
+#+end_src
 
+** Magit
+#+begin_src emacs-lisp
   (use-package magit
     :commands (magit-status magit-get-current-branch)
     :custom
@@ -176,7 +180,10 @@ These packages transform Emacs from a text editor into a full-fledged Integrated
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
 
+** Projectile
+#+begin_src emacs-lisp
   (use-package projectile
     :diminish projectile-mode
     :config (projectile-mode)
@@ -190,7 +197,38 @@ These packages transform Emacs from a text editor into a full-fledged Integrated
 
   (use-package counsel-projectile
     :after projectile
-    :config (counsel-projectile-mode)) 
+    :config (counsel-projectile-mode))
+#+end_src
+
+** Eshell
+#+begin_src emacs-lisp
+  (defun efs/configure-eshell ()
+    ;; Save command history when commands are entered
+    (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+    ;; Truncate buffer for performance
+    (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+    ;; Bind some useful keys for evil-mode
+    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+    (evil-normalize-keymaps)
+
+    (setq eshell-history-size         10000
+          eshell-buffer-maximum-lines 10000
+          eshell-hist-ignoredups t
+          eshell-scroll-to-bottom-on-input t))
+
+  (use-package eshell-git-prompt)
+
+  (use-package eshell
+    :hook (eshell-first-time-mode . efs/configure-eshell)
+    :config
+    (eshell-git-prompt-use-theme 'robbyrussell))
+    ;; Route visual programs to a real terminal automatically
+    (with-eval-after-load 'esh-opt
+      (setq eshell-destroy-buffer-when-process-dies t)
+      (setq eshell-visual-commands '("htop" "zsh" "vim"))))
 #+end_src
 
 * The Org Universe
@@ -229,11 +267,11 @@ Org mode is the ultimate system for note-taking, task management, and literate p
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Arial" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :weight 'regular :height (cdr face)))
 
   (defun my/org-visual-fill ()
     (setq visual-fill-column-width 100
-          visual-fill-column-center-text t)
+          visual-fill-column-center-text nil)
     (visual-line-mode 1)
     (visual-fill-column-mode 1))
 
@@ -253,10 +291,11 @@ Org mode is the ultimate system for note-taking, task management, and literate p
        (shell      . t)))
 
     (setq org-confirm-babel-evaluate nil)
-    (setq org-babel-python-command "python3")) 
+    (setq org-babel-python-command "python3"))
 
   (require 'org-tempo)
 #+end_src
+
 *** Auto-Tangle Configuration
 Automatically extract the code from this file into =config.el= every time we save.
 
@@ -272,6 +311,7 @@ Automatically extract the code from this file into =config.el= every time we sav
   ;; Add the function to the 'after-save-hook' specifically for Org mode
   (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
 #+end_src
+
 * Development
 ** Languages
 *** Language Servers
@@ -288,10 +328,12 @@ Automatically extract the code from this file into =config.el= every time we sav
     (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
     :config
     (lsp-enable-which-key-integration t))
+
   (use-package lsp-ui
     :hook (lsp-mode . lsp-ui-mode)
     :custom
     (lsp-ui-doc-position 'bottom))
+
   ;; 1. Load the core file explorer first
   (use-package treemacs
     :ensure t
@@ -332,6 +374,7 @@ Automatically extract the code from this file into =config.el= every time we sav
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
+
   (use-package company-box
     :hook (company-mode . company-box-mode))
 #+end_src
