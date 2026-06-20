@@ -33,7 +33,8 @@
 (dolist (mode '(org-mode-hook
                 term-mode-hook
                 eshell-mode-hook
-                vterm-mode-hook))
+                vterm-mode-hook
+		  treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode -1))))
 
 (use-package evil
@@ -143,7 +144,6 @@
 
 (defun my/org-mode-setup ()
   (org-indent-mode)
-  (variable-pitch-mode 1)
   (visual-line-mode 1))
 
 (use-package org
@@ -197,3 +197,64 @@
   (setq org-babel-python-command "python3")) 
 
 (require 'org-tempo)
+
+(defun my/org-babel-tangle-config ()
+  "Automatically tangle our config.org file when we save it."
+  (when (string-equal (file-name-nondirectory (buffer-file-name))
+                      "Config.org")
+    ;; Tangle the file without asking for confirmation
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+;; Add the function to the 'after-save-hook' specifically for Org mode
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
+
+(defun efs/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . efs/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+;; 1. Load the core file explorer first
+(use-package treemacs
+  :ensure t
+  :bind
+  ("C-c t t" . treemacs))               ;; Shortcut to toggle the sidebar
+
+;; 2. Make Vim keys work inside the explorer
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
+
+;; 3. Finally, wire the explorer up to the Language Server
+(use-package lsp-treemacs
+  :after (treemacs lsp)                 ;; Only load after both treemacs AND lsp exist
+  :ensure t)
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+(use-package company
+  :after lsp-mode
+  :hook (prog-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+(use-package company-box
+  :hook (company-mode . company-box-mode))
