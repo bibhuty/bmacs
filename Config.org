@@ -29,6 +29,21 @@ We use =use-package= to safely declare and install all external packages. It kee
   (setq use-package-always-ensure t)
 #+end_src
 
+** Fonts
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+  :if (display-graphic-p)
+  :config
+  (unless (find-font (font-spec :name "all-the-icons"))
+    (all-the-icons-install-fonts t)))
+
+  (use-package nerd-icons
+  :if (display-graphic-p)
+  :config
+  (unless (find-font (font-spec :name "Symbols Nerd Font Mono"))
+    (nerd-icons-install-fonts t)))
+#+end_src
+
 * Visual Aesthetics
 By default, Emacs looks like a piece of software from the 1980s. This section strips away the outdated UI elements (toolbars, scrollbars) and applies a modern, readable aesthetic.
 
