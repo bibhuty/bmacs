@@ -29,7 +29,7 @@ We use =use-package= to safely declare and install all external packages. It kee
   (setq use-package-always-ensure t)
 #+end_src
 
-** Fonts
+** Icons 
 #+begin_src emacs-lisp
   (use-package all-the-icons
   :if (display-graphic-p)
