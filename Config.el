@@ -66,7 +66,9 @@
 
   (evil-set-initial-state 'messages-buffer-mode 'normal)
   (evil-set-initial-state 'dashboard-mode 'normal)
+  (evil-set-initial-state 'sql-interactive-mode 'emacs)
   (evil-set-initial-state 'vterm-mode 'emacs))
+
 
 (use-package evil-collection
   :after evil
